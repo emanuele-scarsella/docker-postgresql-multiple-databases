@@ -49,6 +49,24 @@ to the container:
             - POSTGRES_USER: myapp
             - POSTGRES_PASSWORD:
 
+### Custom user and password for each database
+
+If you need to use a custom user and password for each database, you can do it by adding the `POSTGRES_USER_<uppercase database name>`
+and `POSTGRES_PASSWORD_<uppercase database name>` environment variables:
+
+    myapp-postgresql:
+        image: postgres:9.6.2
+        volumes:
+            - ../docker-postgresql-multiple-databases:/docker-entrypoint-initdb.d
+        environment:
+            - POSTGRES_MULTIPLE_DATABASES: db1,db2
+            - POSTGRES_USER: myapp
+            - POSTGRES_PASSWORD:
+            - POSTGRES_USER_DB1: myapp_db1
+            - POSTGRES_PASSWORD_DB1:
+            - POSTGRES_USER_DB2: myapp_db2
+            - POSTGRES_PASSWORD_DB2:
+
 ### Non-standard database names
 
 If you need to use non-standard database names (hyphens, uppercase letters etc), quote them in `POSTGRES_MULTIPLE_DATABASES`:
