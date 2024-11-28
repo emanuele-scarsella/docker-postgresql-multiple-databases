@@ -10,6 +10,9 @@
 set -e
 set -u
 
+# Create a user and a database, if they don't already exist
+# Arguments:
+#   $1 - Database name
 function create_user_and_database() {
 	local database=$1
 	local user=$(get_user_for_database $database)
@@ -28,6 +31,10 @@ function create_user_and_database() {
 	fi
 }
 
+# Create a PostgreSQL user
+# Arguments:
+#   $1 - User name
+#   $2 - User password (optional)
 function create_user() {
 	local user=$1
 	local password=$2
@@ -36,6 +43,10 @@ function create_user() {
 	EOSQL
 }
 
+# Create a PostgreSQL database and assign ownership
+# Arguments:
+#   $1 - Database name
+#   $2 - User name
 function create_database() {
 	local database=$1
 	local user=$2
@@ -45,6 +56,11 @@ function create_database() {
 	EOSQL
 }
 
+# Check if a PostgreSQL user exists
+# Arguments:
+#   $1 - User name
+# Returns:
+#   0 if user exists, 1 otherwise
 function user_exists() {
 	local user=$1
 	local result
@@ -58,6 +74,11 @@ function user_exists() {
 	return 1
 }
 
+# Check if a PostgreSQL database exists
+# Arguments:
+#   $1 - Database name
+# Returns:
+#   0 if database exists, 1 otherwise
 function database_exists() {
 	local database="$1"
 	if psql -lqt --username "$POSTGRES_USER" | cut -d \| -f 1 | grep -qw "$database"; then
@@ -67,18 +88,29 @@ function database_exists() {
 	fi
 }
 
+# Retrieve the user for a given database
+# Arguments:
+#   $1 - Database name
+# Returns:
+#   User name derived from environment variables or defaults to database name
 function get_user_for_database() {
     local database=$1
     local user_var="POSTGRES_USER_${database^^}"
     echo "${!user_var:-$database}"
 }
 
+# Retrieve the password for a given database
+# Arguments:
+#   $1 - Database name
+# Returns:
+#   Password derived from environment variables or empty if not set
 function get_password_for_database() {
     local database=$1
     local password_var="POSTGRES_PASSWORD_${database^^}"
     echo "${!password_var:-}"
 }
 
+# Main script logic: Create multiple databases if specified in the environment variable
 if [ -n "$POSTGRES_MULTIPLE_DATABASES" ]; then
 	echo "Multiple database creation requested: $POSTGRES_MULTIPLE_DATABASES"
 	for db in $(echo $POSTGRES_MULTIPLE_DATABASES | tr ',' ' '); do
